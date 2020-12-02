@@ -1,31 +1,46 @@
 <template>
-  <div id="nav">
-    <div>
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+  <div class="app-container">
+    <div class="common-header">
+      <header-bar></header-bar>
     </div>
-    <router-view />
+    <div class="app-page">
+      <div class="app-page-main">
+        <router-view />
+      </div>
+    </div>
   </div>
 </template>
-
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+<script>
+import HeaderBar from '@/components/HeaderBar'
+export default {
+  name: 'APP',
+  data() {
+    return {}
+  },
+  methods: {},
+  components: { HeaderBar }
 }
+</script>
 
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
+<style scoped lang="scss">
+.app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  .common-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
+  .app-page {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    .app-page-main {
+      width: 90%;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
     }
   }
 }
