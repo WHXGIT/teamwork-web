@@ -1,56 +1,59 @@
 // Created by whx
 <template>
   <div class="sr-container">
-    <div class="code-submit-condition">
-      <label class="code-submit-label">提交人：</label>
-      <div class="code-submit-fill">
-        <el-select
-          v-model="creator"
-          clearable
-          placeholder="请选择提交人"
-          size="mini"
-        >
-          <el-option
-            v-for="item in creators"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
+    <el-card shadow="never">
+      <div class="code-submit-condition">
+        <label class="code-submit-label">提交人：</label>
+        <div class="code-submit-fill">
+          <el-select
+            v-model="creator"
+            clearable
+            placeholder="请选择提交人"
+            size="mini"
           >
-          </el-option>
-        </el-select>
+            <el-option
+              v-for="item in creators"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+            </el-option>
+          </el-select>
+        </div>
+        <label class="code-submit-label">关键字：</label>
+        <div class="code-submit-fill">
+          <el-input placeholder="请输入关键字" v-model="keyword" size="mini">
+          </el-input>
+        </div>
+        <label class="code-submit-label">时间范围：</label>
+        <div class="code-submit-fill">
+          <el-date-picker
+            size="mini"
+            clearable
+            v-model="date"
+            type="daterange"
+            align="right"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            unlink-panels
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            :picker-options="pickerOptions"
+          >
+          </el-date-picker>
+        </div>
+        <div class="code-submit-fill" style="margin-left: 20px;">
+          <el-button
+            type="primary"
+            icon="el-icon-search"
+            size="mini"
+            @click="getList"
+            >搜索</el-button
+          >
+        </div>
       </div>
-      <label class="code-submit-label">关键字：</label>
-      <div class="code-submit-fill">
-        <el-input placeholder="请输入关键字" v-model="keyword" size="mini">
-        </el-input>
-      </div>
-      <label class="code-submit-label">时间范围：</label>
-      <div class="code-submit-fill">
-        <el-date-picker
-          size="mini"
-          clearable
-          v-model="date"
-          type="daterange"
-          align="right"
-          value-format="yyyy-MM-dd HH:mm:ss"
-          unlink-panels
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :picker-options="pickerOptions"
-        >
-        </el-date-picker>
-      </div>
-      <div class="code-submit-fill" style="margin-left: 20px;">
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="getList"
-          >搜索</el-button
-        >
-      </div>
-    </div>
+    </el-card>
+
     <el-divider></el-divider>
     <div class="button-operate-scope">
       <el-button
@@ -69,28 +72,34 @@
       >
     </div>
     <div class="table-page-component">
-      <el-tabs type="border-card">
-        <el-tab-pane label="分支到主干">
-          <table-page :params="params"></table-page>
-        </el-tab-pane>
-        <el-tab-pane label="主干到基线">
-          <table-page :params="params"></table-page>
+      <el-tabs type="border-card" v-model="params.requestType" lazy="true">
+        <el-tab-pane
+          :label="item.label"
+          :name="item.value"
+          v-for="(item, index) in requestTypeEnum"
+          :key="index"
+        >
+          <table-page
+            :params="params"
+            :ref="item.refName"
+            v-if="params.requestType === item.value"
+          ></table-page>
         </el-tab-pane>
       </el-tabs>
     </div>
 
-    <el-dialog title="创建提交申请" :visible.sync="dialogVisible" width="50%">
+    <el-dialog title="创建提交申请" :visible.sync="createVisible" width="50%">
       <form-list
         :creators="creators"
         ref="createFormList"
-        @refresh="getList"
+        @refresh="refresh"
       ></form-list>
     </el-dialog>
     <el-dialog title="修改提交申请" :visible.sync="modifyVisible" width="50%">
       <form-list
         :creators="creators"
         ref="modifyFormList"
-        @refresh="getList"
+        @refresh="refresh"
       ></form-list>
     </el-dialog>
   </div>
@@ -103,11 +112,14 @@ export default {
   name: 'SubmitRequest',
   data() {
     return {
-      dialogVisible: false,
+      requestTypeEnum: [
+        { label: '分支到主干', value: '1', refName: 'trunk' },
+        { label: '同步至基线', value: '2', refName: 'baseline' }
+      ],
+      createVisible: false,
       modifyVisible: false,
-      params: {},
+      params: { requestType: '1' },
       date: '',
-      bugNo: '',
       creator: '',
       keyword: '',
       creators: [],
@@ -148,7 +160,17 @@ export default {
   },
 
   methods: {
-    getList() {},
+    refresh() {
+      this.createVisible = false
+      this.modifyVisible = false
+    },
+    getList() {
+      if (this.requestType === '1') {
+        this.$resf.trunk.getList()
+      } else {
+        this.$resf.baseline.getList()
+      }
+    },
     listUsers: function() {
       var _this = this
       this.$cat
@@ -165,9 +187,8 @@ export default {
           _this.$message.error('服务器发生异常！')
         })
     },
-
     createHandle: function() {
-      this.dialogVisible = true
+      this.createVisible = true
     },
 
     download: function() {
@@ -276,9 +297,8 @@ export default {
 
   .code-submit-label {
     display: inline-flex;
-    width: 8%;
     height: 28px;
-    margin-left: 5%;
+    margin-left: 30px;
     line-height: 28px;
     text-align: center;
     font-size: 14px;
@@ -286,14 +306,12 @@ export default {
 
   .code-submit-fill {
     display: inline-flex;
-    width: 15%;
   }
 
   .code-submit-condition {
+    width: 100%;
     display: flex;
-    padding-top: 20px;
     margin: 5px;
-    height: 28px;
   }
 
   .span-break-line {

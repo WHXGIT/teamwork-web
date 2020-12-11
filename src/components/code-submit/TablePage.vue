@@ -111,7 +111,7 @@
           show-overflow-tooltip
         >
         </el-table-column>
-        <el-table-column label="数据状态" width="50">
+        <el-table-column label="数据状态" width="100">
           <template slot-scope="scope">{{
             scope.row.status | statusFilter
           }}</template>
@@ -160,7 +160,7 @@
         small
         @current-change="handleCurrentChange"
         :current-page="pageInfo.pageNum"
-        :page-sizes="[20, 50, 100, 500]"
+        :page-sizes="[15, 50, 100, 500]"
         :page-size="pageInfo.pageSize"
         layout="total, sizes, prev, pager, next, jumper"
         :total="pageInfo.total"
@@ -183,7 +183,7 @@ export default {
       tableData: [],
       pageInfo: {
         pageNum: 1,
-        pageSize: 20,
+        pageSize: 15,
         total: 0
       }
     }
@@ -334,7 +334,6 @@ export default {
             _this.pageInfo.pageNum = res.pageNum
             _this.pageInfo.pageSize = res.pageSize
             _this.pageInfo.total = res.total
-
             _this.loading = false
           } else {
             _this.$message.error('网络异常！')
@@ -354,11 +353,11 @@ export default {
 <style scoped lang="scss">
 .tp-container {
   width: 100%;
-  height: 680px;
+  height: 670px;
   display: flex;
   flex-direction: column;
   .table-body {
-    min-height: 660px;
+    min-height: 650px;
     overflow: auto;
   }
   .el-col {

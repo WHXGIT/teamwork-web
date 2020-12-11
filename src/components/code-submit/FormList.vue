@@ -22,9 +22,11 @@
           ></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="提交目标" prop="submitTarget">
-        <el-checkbox v-model="toTrank">分支到主干</el-checkbox>
-        <el-checkbox v-model="toBaseline">同步至基线</el-checkbox>
+      <el-form-item label="提交目标" prop="submitTargets">
+        <el-checkbox-group v-model="ruleForm.submitTargets">
+          <el-checkbox label="分支到主干" name="submitTargets"></el-checkbox>
+          <el-checkbox label="同步至基线" name="submitTargets"></el-checkbox>
+        </el-checkbox-group>
       </el-form-item>
       <el-form-item label="代码修改说明" prop="codeModifyDesc">
         <el-input
@@ -120,13 +122,9 @@ export default {
   },
   data() {
     return {
-      submitTargets: [
-        { value: '分支到主干', label: '分支到主干' },
-        { value: '主干到基线', label: '主干到基线' }
-      ],
-      toTrank: true,
-      toBaseline: true,
       ruleForm: {
+        submitTargets: ['分支到主干', '同步至基线'],
+        submitTarget: '',
         id: '',
         sonar: false,
         unitTest: false,
@@ -134,7 +132,6 @@ export default {
         smokeTest: false,
         bugNo: '-',
         creator: '',
-        submitTarget: '分支到主干',
         requireDesc: '-',
         codeModifyDesc:
           '【修改原因】填写BUG号或需求说明\r\n' +
@@ -152,8 +149,13 @@ export default {
         creator: [
           { required: true, message: '请选择申请人', trigger: 'change' }
         ],
-        submitTarget: [
-          { required: true, message: '请选择提交目标', trigger: 'change' }
+        submitTargets: [
+          {
+            type: 'array',
+            required: true,
+            message: '请至少选择一个提交目标',
+            trigger: 'change'
+          }
         ],
         codeModifyDesc: [
           { required: true, message: '请填写代码修改说明', trigger: 'blur' }
@@ -182,35 +184,59 @@ export default {
     }
   },
   methods: {
-    initEditRuleForm: function(ruleForm) {
+    initEditRuleForm(ruleForm) {
       this.ruleForm = ruleForm
     },
-    submitForm: function(formName) {
-      var _this = this
-      this.$refs[formName].validate(valid => {
-        if (valid) {
-          this.$cat
-            .post('/tw-csl/code-submit-list', _this.ruleForm)
-            .then(function(response) {
-              if (response.status === 200) {
-                _this.resetForm('ruleForm')
-                _this.$emit('refresh')
-                _this.dialogFormVisible = false
-                console.log(response)
-              } else {
-                _this.$message.error('网络异常！')
-              }
-            })
-            .catch(function(error) {
-              _this.$message.error('服务器发生异常！')
-              _this.dialogFormVisible = false
-              console.log(error)
-            })
-        } else {
-          console.log('error submit!!')
-          return false
+    submitForm(formName) {
+      let sts = this.ruleForm.submitTargets
+      for (let i = 0; i < sts.length; i++) {
+        if (sts[i]) {
+          if (sts[i] === '分支到主干') {
+            this.ruleForm.submitTarget = 1
+          } else if (sts[i] === '同步至基线') {
+            this.ruleForm.submitTarget = 2
+          }
+          var _this = this
+          this.$refs[formName].validate(valid => {
+            if (valid) {
+              this.$cat
+                .post('/tw-csl/code-submit-list', _this.ruleForm)
+                .then(function(response) {
+                  if (response.status === 200) {
+                    _this.resetForm('ruleForm')
+
+                    if (sts[0] === '分支到主干') {
+                      _this.$emit('refresh', 1)
+                    } else {
+                      _this.$emit('refresh', 2)
+                    }
+
+                    console.log(response)
+                  } else {
+                    _this.$message.error('网络异常！')
+                  }
+                })
+                .catch(function(error) {
+                  _this.$message.error('服务器发生异常！')
+                  if (sts.length > 1) {
+                    _this.$emit('refresh', 1)
+                    _this.$emit('refresh', 2)
+                  } else {
+                    if (sts[0] === '分支到主干') {
+                      _this.$emit('refresh', 1)
+                    } else {
+                      _this.$emit('refresh', 2)
+                    }
+                  }
+                  console.log(error)
+                })
+            } else {
+              console.log('error submit!!')
+              return false
+            }
+          })
         }
-      })
+      }
     },
     modifyForm: function(formName) {
       var _this = this
