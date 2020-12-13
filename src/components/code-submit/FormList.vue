@@ -118,7 +118,8 @@ export default {
   name: '',
   props: {
     title: String,
-    creators: Array
+    creators: Array,
+    params: Object
   },
   data() {
     return {
@@ -189,6 +190,7 @@ export default {
     },
     submitForm(formName) {
       let sts = this.ruleForm.submitTargets
+      let refreshOnce = true
       for (let i = 0; i < sts.length; i++) {
         if (sts[i]) {
           if (sts[i] === '分支到主干') {
@@ -204,31 +206,17 @@ export default {
                 .then(function(response) {
                   if (response.status === 200) {
                     _this.resetForm('ruleForm')
-
-                    if (sts[0] === '分支到主干') {
-                      _this.$emit('refresh', 1)
-                    } else {
-                      _this.$emit('refresh', 2)
+                    if (refreshOnce) {
+                      _this.refresh()
+                      refreshOnce = false
                     }
-
-                    console.log(response)
                   } else {
                     _this.$message.error('网络异常！')
                   }
                 })
                 .catch(function(error) {
                   _this.$message.error('服务器发生异常！')
-                  if (sts.length > 1) {
-                    _this.$emit('refresh', 1)
-                    _this.$emit('refresh', 2)
-                  } else {
-                    if (sts[0] === '分支到主干') {
-                      _this.$emit('refresh', 1)
-                    } else {
-                      _this.$emit('refresh', 2)
-                    }
-                  }
-                  console.log(error)
+                  _this.refresh()
                 })
             } else {
               console.log('error submit!!')
@@ -238,7 +226,10 @@ export default {
         }
       }
     },
-    modifyForm: function(formName) {
+    refresh() {
+      this.$emit('refresh')
+    },
+    modifyForm(formName) {
       var _this = this
       this.$refs[formName].validate(function(valid) {
         if (valid) {

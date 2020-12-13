@@ -72,7 +72,7 @@
       >
     </div>
     <div class="table-page-component">
-      <el-tabs type="border-card" v-model="params.requestType" lazy="true">
+      <el-tabs type="border-card" v-model="requestType" lazy="true">
         <el-tab-pane
           :label="item.label"
           :name="item.value"
@@ -81,8 +81,9 @@
         >
           <table-page
             :params="params"
-            :ref="item.refName"
-            v-if="params.requestType === item.value"
+            :key="index"
+            ref="tablepage"
+            v-if="requestType === item.value"
           ></table-page>
         </el-tab-pane>
       </el-tabs>
@@ -91,6 +92,7 @@
     <el-dialog title="创建提交申请" :visible.sync="createVisible" width="50%">
       <form-list
         :creators="creators"
+        :params="params"
         ref="createFormList"
         @refresh="refresh"
       ></form-list>
@@ -98,6 +100,7 @@
     <el-dialog title="修改提交申请" :visible.sync="modifyVisible" width="50%">
       <form-list
         :creators="creators"
+        :params="params"
         ref="modifyFormList"
         @refresh="refresh"
       ></form-list>
@@ -113,12 +116,12 @@ export default {
   data() {
     return {
       requestTypeEnum: [
-        { label: '分支到主干', value: '1', refName: 'trunk' },
-        { label: '同步至基线', value: '2', refName: 'baseline' }
+        { label: '分支到主干', value: '1' },
+        { label: '同步至基线', value: '2' }
       ],
       createVisible: false,
       modifyVisible: false,
-      params: { requestType: '1' },
+      requestType: '1',
       date: '',
       creator: '',
       keyword: '',
@@ -148,10 +151,15 @@ export default {
     }
   },
   computed: {
-    startTime: function() {
+    params() {
+      return {
+        requestType: this.requestType
+      }
+    },
+    startTime() {
       return this.date instanceof Array ? this.date[0] : ''
     },
-    endTime: function() {
+    endTime() {
       return this.date instanceof Array ? this.date[1] : ''
     }
   },
@@ -163,13 +171,13 @@ export default {
     refresh() {
       this.createVisible = false
       this.modifyVisible = false
+      this.getList()
     },
     getList() {
-      if (this.requestType === '1') {
-        this.$resf.trunk.getList()
-      } else {
-        this.$resf.baseline.getList()
-      }
+      let theRef = 'tablepage' + (this.requestType - 1)
+      // this.$nextTick(() => {
+      this.$refs.tablepage[0].getList()
+      // })
     },
     listUsers: function() {
       var _this = this
@@ -210,10 +218,10 @@ export default {
       a.click() // 自执行点击事件
     },
 
-    enter: function(index) {
+    enter(index) {
       console.warn('enter')
     },
-    leave: function() {
+    leave() {
       console.warn('leave')
     }
   },
@@ -228,6 +236,9 @@ export default {
 .sr-container {
   width: 100%;
   height: 100%;
+  .el-divider--horizontal {
+    margin: 10px 0;
+  }
   .table-page-component {
     width: 100%;
     height: 100%;
@@ -235,60 +246,9 @@ export default {
     flex-direction: column;
     align-items: stretch;
   }
-  .el-col {
-    border-radius: 4px;
-  }
-
-  .bg-purple-dark {
-    background: #99a9bf;
-  }
-
-  .bg-purple {
-    background: #d3dce6;
-  }
-
-  .bg-purple-light {
-    background: #e5e9f2;
-  }
-
-  .grid-content {
-    border-radius: 4px;
-    min-height: 36px;
-  }
-
-  .demo-table-expand {
-    width: 60%;
-    font-size: 0;
-  }
-
-  .demo-table-expand .el-form-item__content {
-    padding-top: 10px;
-    line-height: 20px;
-    position: relative;
-    font-size: 14px;
-  }
-
-  .demo-table-expand label {
-    width: 100px;
-    color: #99a9bf;
-  }
-
-  .demo-table-expand .el-form-item {
-    margin-right: 0;
-    margin-bottom: 0;
-    width: 50%;
-  }
 
   .button-operate-scope {
-    margin: 5px 10px;
-  }
-
-  .el-table .giveup-row {
-    background: oldlace;
-  }
-
-  .el-table .success-row {
-    background: #f0f9eb;
+    margin: 15px 10px 7px 0;
   }
 
   .page-select-down .el-select-dropdown {
