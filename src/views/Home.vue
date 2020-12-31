@@ -85,7 +85,7 @@ export default {
   data() {
     return {
       msg: 'Hello Vue!',
-      lanProjects: [{ id: '0', name: 'bos-bd', desc: '行政区划' }],
+      lanProjects: [{ id: '10001', name: 'bos-bd', desc: '行政区划' }],
       i18nProjects: [{ id: '1', name: 'bos-tc', desc: '翻译平台' }],
       dialogFormVisible: false,
       form: {
@@ -103,10 +103,50 @@ export default {
   },
   methods: {
     toProject(id) {
-      window.location = location.origin + '/code-submit-list' + '/' + id
+      this.$router.push({ name: 'SubmitRequest', query: { project_id: id } })
     },
     showProjectDetail() {
       this.dialogFormVisible = true
+    },
+    getLanProjects() {
+      this.$cat
+        .get('/tw-csl/list', {
+          params: Object.assign(this.params, this.pageInfo)
+        })
+        .then(response => {
+          if (response.status === 200) {
+            let res = response.data.data
+            this.tableData = res.list
+            this.pageInfo.pageNum = res.pageNum
+            this.pageInfo.pageSize = res.pageSize
+            this.pageInfo.total = res.total
+          } else {
+            this.$message.error('网络异常！')
+          }
+        })
+        .catch(error => {
+          this.$message.error('服务器发生异常！')
+        })
+    },
+    getI18nProjects() {
+      this.$cat
+        .get('/tw-csl/list', {
+          params: Object.assign(this.params, this.pageInfo)
+        })
+        .then(response => {
+          if (response.status === 200) {
+            let res = response.data.data
+            this.tableData = res.list
+            this.pageInfo.pageNum = res.pageNum
+            this.pageInfo.pageSize = res.pageSize
+            this.pageInfo.total = res.total
+          } else {
+            this.$message.error('网络异常！')
+          }
+        })
+        .catch(error => {
+          this.$message.error('服务器发生异常！')
+        })
     }
   },
   components: {}

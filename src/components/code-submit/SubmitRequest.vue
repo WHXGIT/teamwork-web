@@ -67,6 +67,7 @@
         type="primary"
         size="mini"
         icon="el-icon-download"
+        v-if="false"
         @click="download"
         >下载申请单</el-button
       >
@@ -83,6 +84,7 @@
             :params="params"
             :key="index"
             ref="tablepage"
+            @modify="modify"
             v-if="requestType === item.value"
           ></table-page>
         </el-tab-pane>
@@ -93,7 +95,6 @@
       <form-list
         :creators="creators"
         :params="params"
-        ref="createFormList"
         @refresh="refresh"
       ></form-list>
     </el-dialog>
@@ -101,7 +102,7 @@
       <form-list
         :creators="creators"
         :params="params"
-        ref="modifyFormList"
+        ref="modifyformlist"
         @refresh="refresh"
       ></form-list>
     </el-dialog>
@@ -153,7 +154,12 @@ export default {
   computed: {
     params() {
       return {
-        requestType: this.requestType
+        requestType: this.requestType,
+        startTime: this.startTime,
+        endTime: this.endTime,
+        creator: this.creator,
+        keyword: this.keyword,
+        projectId: this.$route.query.project_id
       }
     },
     startTime() {
@@ -174,10 +180,7 @@ export default {
       this.getList()
     },
     getList() {
-      let theRef = 'tablepage' + (this.requestType - 1)
-      // this.$nextTick(() => {
       this.$refs.tablepage[0].getList()
-      // })
     },
     listUsers: function() {
       var _this = this
@@ -195,13 +198,30 @@ export default {
           _this.$message.error('服务器发生异常！')
         })
     },
+    modify(id) {
+      this.modifyVisible = true
+
+      this.$cat
+        .get('/tw-csl/lists/list/' + id)
+        .then(response => {
+          if (response.status === 200) {
+            let ruleForm = response.data.data
+            this.$refs.modifyformlist.initEditRuleForm(ruleForm)
+          } else {
+            this.$message.error('网络异常！')
+          }
+        })
+        .catch(error => {
+          this.$message.error('服务器发生异常！')
+        })
+    },
     createHandle: function() {
       this.createVisible = true
     },
 
     download: function() {
-      var a = document.createElement('a')
-      var href =
+      let a = document.createElement('a')
+      let href =
         '/tw-csl/download?bugNo=' +
         this.bugNo +
         '&creator=' +
@@ -217,7 +237,6 @@ export default {
       a.setAttribute('download', '') // download属性
       a.click() // 自执行点击事件
     },
-
     enter(index) {
       console.warn('enter')
     },

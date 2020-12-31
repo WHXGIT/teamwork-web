@@ -24,8 +24,16 @@
       </el-form-item>
       <el-form-item label="提交目标" prop="submitTargets">
         <el-checkbox-group v-model="ruleForm.submitTargets">
-          <el-checkbox label="分支到主干" name="submitTargets"></el-checkbox>
-          <el-checkbox label="同步至基线" name="submitTargets"></el-checkbox>
+          <el-checkbox
+            label="分支到主干"
+            name="submitTargets"
+            :disabled="trunkDisabled"
+          ></el-checkbox>
+          <el-checkbox
+            label="同步至基线"
+            name="submitTargets"
+            :disabled="baselineDisabled"
+          ></el-checkbox>
         </el-checkbox-group>
       </el-form-item>
       <el-form-item label="代码修改说明" prop="codeModifyDesc">
@@ -123,6 +131,7 @@ export default {
   },
   data() {
     return {
+      isModifyOpt: false,
       ruleForm: {
         submitTargets: ['分支到主干', '同步至基线'],
         submitTarget: '',
@@ -165,28 +174,65 @@ export default {
       }
     }
   },
+  computed: {
+    baselineDisabled: function() {
+      let result = false
+      if (this.ruleForm.submitTargets.length === 1) {
+        if (this.ruleForm.submitTargets[0] === '分支到主干') {
+          if (this.isModifyOpt) {
+            result = true
+          }
+        }
+      }
+      return result
+    },
+    trunkDisabled: function() {
+      let result = false
+      if (this.ruleForm.submitTargets.length === 1) {
+        if (this.ruleForm.submitTargets[0] === '同步至基线') {
+          if (this.isModifyOpt) {
+            result = true
+          }
+        }
+      }
+      return result
+    }
+  },
   watch: {
     'ruleForm.creator': {
       handler: function(newName, oldName) {
         if (typeof newName === 'string' && newName !== '') {
-          var desc = this.ruleForm.codeModifyDesc
-          var strArr = desc.split('【修改人】')
+          let desc = this.ruleForm.codeModifyDesc
+          let strArr = desc.split('【修改人】')
+          let labelName = ''
+          for (let i = 0; i < this.creators.length; i++) {
+            if (newName === this.creators[i].value) {
+              labelName = this.creators[i].label
+              break
+            }
+          }
           // var preStr = strArr[0] +
           this.ruleForm.codeModifyDesc =
-            strArr[0] + '【修改人】' + newName + '\r\n' + '【检查人】' + newName
+            strArr[0] + '【修改人】' + labelName + '\r\n' + '【检查人】吴敏'
         }
       },
       immediate: true
     }
   },
-  mounted: function() {
-    if (this.rowjsonbak instanceof Array && this.rowjsonbak.length > 0) {
-      this.ruleForm = this.rowjsonbak
-    }
-  },
   methods: {
     initEditRuleForm(ruleForm) {
+      this.isModifyOpt = true
       this.ruleForm = ruleForm
+      let st = ruleForm.submitTarget
+      if (st === 1) {
+        this.ruleForm.submitTargets = ['分支到主干']
+      } else {
+        this.ruleForm.submitTargets = ['同步至基线']
+      }
+      this.ruleForm.sonar = this.ruleForm.sonar === 1 ? true : false
+      this.ruleForm.unitTest = this.ruleForm.unitTest === 1 ? true : false
+      this.ruleForm.smokeTest = this.ruleForm.smokeTest === 1 ? true : false
+      this.ruleForm.codeReview = this.ruleForm.codeReview === 1 ? true : false
     },
     submitForm(formName) {
       let sts = this.ruleForm.submitTargets
@@ -200,10 +246,19 @@ export default {
           }
           var _this = this
           this.$refs[formName].validate(valid => {
+            let projectId = this.$route.query.project_id
+            if (!projectId) {
+              projectId = 0
+            }
             if (valid) {
               this.$cat
-                .post('/tw-csl/code-submit-list', _this.ruleForm)
-                .then(function(response) {
+                .post(
+                  '/tw-csl/code-submit-list',
+                  Object.assign(_this.ruleForm, {
+                    project: projectId
+                  })
+                )
+                .then(response => {
                   if (response.status === 200) {
                     _this.resetForm('ruleForm')
                     if (refreshOnce) {
@@ -230,29 +285,25 @@ export default {
       this.$emit('refresh')
     },
     modifyForm(formName) {
-      var _this = this
-      this.$refs[formName].validate(function(valid) {
+      let _this = this
+      this.$refs[formName].validate(valid => {
         if (valid) {
           this.$cat
             .put('/tw-csl/code-submit-list', _this.ruleForm)
-            .then(function(response) {
+            .then(response => {
               if (response.status === 200) {
-                _this.resetForm('ruleForm')
                 _this.$emit('refresh')
-                _this.dialogFormVisible = false
                 console.log(response)
               } else {
                 _this.$message.error('网络异常！')
               }
             })
-            .catch(function(error) {
+            .catch(error => {
               _this.$message.error('服务器发生异常！')
-              _this.dialogFormVisible = false
               console.log(error)
             })
         } else {
           console.log('error submit!!')
-          return false
         }
       })
     },

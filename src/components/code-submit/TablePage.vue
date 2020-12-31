@@ -18,16 +18,16 @@
                 <span v-html="props.row.creator"></span>
               </el-form-item>
               <el-form-item label="Sonar扫描">
-                <span>{{ props.row.sonar | selfTestFilter }}</span>
+                <span>{{ props.row.sonar | smokeTestFilter }}</span>
               </el-form-item>
               <el-form-item label="单元测试">
-                <span>{{ props.row.unitTest | selfTestFilter }}</span>
+                <span>{{ props.row.unitTest | smokeTestFilter }}</span>
               </el-form-item>
               <el-form-item label="冒烟测试">
                 <span>{{ props.row.smokeTest | smokeTestFilter }}</span>
               </el-form-item>
               <el-form-item label="代码评审">
-                <span>{{ props.row.codeReview | selfTestFilter }}</span>
+                <span>{{ props.row.codeReview | smokeTestFilter }}</span>
               </el-form-item>
               <el-form-item label="Java文件名">
                 <span
@@ -73,14 +73,14 @@
         <el-table-column
           label="修改说明"
           prop="codeModifyDesc"
-          width="150"
+          width="250"
           show-overflow-tooltip
         >
         </el-table-column>
         <el-table-column
           label="影响范围"
           prop="scope"
-          width="150"
+          width="250"
           show-overflow-tooltip
         >
         </el-table-column>
@@ -110,11 +110,6 @@
           width="150"
           show-overflow-tooltip
         >
-        </el-table-column>
-        <el-table-column label="数据状态" width="100">
-          <template slot-scope="scope">{{
-            scope.row.status | statusFilter
-          }}</template>
         </el-table-column>
         <el-table-column label="操作" fixed="right" width="300">
           <template slot-scope="scope">
@@ -189,13 +184,6 @@ export default {
     }
   },
   filters: {
-    selfTestFilter: function(val) {
-      if (val === 0) {
-        return '否'
-      } else {
-        return '是'
-      }
-    },
     smokeTestFilter: function(val) {
       if (val === 0) {
         return '否'
@@ -236,16 +224,7 @@ export default {
       }
     },
     handleEdit: function(rows) {
-      var bakRuleForm = JSON.stringify(rows)
-      var rowJsonBak = JSON.parse(bakRuleForm)
-      if (rowJsonBak.isSelfTest === 1) {
-        rowJsonBak.isSelfTest = true
-      }
-      if (rowJsonBak.smokeTest === 1) {
-        rowJsonBak.smokeTest = true
-      }
-      this.$refs.modifyFormList.initEditRuleForm(rowJsonBak)
-      this.modifyVisible = true
+      this.$emit('modify', rows.id)
     },
     handleFinish: function(id) {
       var _this = this
@@ -351,6 +330,13 @@ export default {
 </script>
 
 <style scoped lang="scss">
+::v-deep .el-table .giveup-row {
+  background: oldlace;
+}
+
+::v-deep .el-table .success-row {
+  background: #f0f9eb;
+}
 .tp-container {
   width: 100%;
   height: 670px;
@@ -364,25 +350,8 @@ export default {
     border-radius: 4px;
   }
 
-  .bg-purple-dark {
-    background: #99a9bf;
-  }
-
-  .bg-purple {
-    background: #d3dce6;
-  }
-
-  .bg-purple-light {
-    background: #e5e9f2;
-  }
-
-  .grid-content {
-    border-radius: 4px;
-    min-height: 36px;
-  }
-
   .demo-table-expand {
-    width: 60%;
+    width: 100%;
     font-size: 0;
   }
 
@@ -393,11 +362,6 @@ export default {
     font-size: 14px;
   }
 
-  .demo-table-expand label {
-    width: 100px;
-    color: #99a9bf;
-  }
-
   .demo-table-expand .el-form-item {
     margin-right: 0;
     margin-bottom: 0;
@@ -406,14 +370,6 @@ export default {
 
   .button-operate-scope {
     margin: 5px 10px;
-  }
-
-  .el-table .giveup-row {
-    background: oldlace;
-  }
-
-  .el-table .success-row {
-    background: #f0f9eb;
   }
 
   .page-select-down .el-select-dropdown {

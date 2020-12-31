@@ -12,7 +12,7 @@ Vue.config.productionTip = false
 
 let axioscat = axios.create({
   baseURL: 'api',
-  timeout: 5000,
+  timeout: 50000,
   headers: { 'Content-Type': 'application/json;charset=UTF-8' }
 })
 
