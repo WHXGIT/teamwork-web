@@ -101,6 +101,7 @@ export default {
       formLabelWidth: '120px'
     }
   },
+  created() {},
   methods: {
     toProject(id) {
       this.$router.push({ name: 'SubmitRequest', query: { project_id: id } })

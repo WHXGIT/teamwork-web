@@ -2,7 +2,9 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from '@/views/Home.vue'
 import LoginPage from '@/views/LoginPage.vue'
+import TestCase from '@/components/test-case/TestCase.vue'
 import SubmitRequest from '@/components/code-submit/SubmitRequest'
+import ConfMgmt from '@/components/conf-mgmt/ConfMgmt'
 Vue.use(Router)
 
 export default new Router({
@@ -18,6 +20,16 @@ export default new Router({
       path: '/submit-request',
       name: 'SubmitRequest',
       component: SubmitRequest
+    },
+    {
+      path: '/test-case',
+      name: 'TestCase',
+      component: TestCase
+    },
+    {
+      path: '/conf-mgmt',
+      name: 'ConfMgmt',
+      component: ConfMgmt
     },
     {
       path: '/',

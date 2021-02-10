@@ -72,6 +72,13 @@
           <el-switch v-model="ruleForm.codeReview"></el-switch>
         </el-form-item>
       </div>
+      <el-form-item label="CR地址" prop="javaFiles">
+        <el-input
+          type="input"
+          :autosize="{ minRows: 2, maxRows: 10 }"
+          v-model="ruleForm.javaFiles"
+        ></el-input>
+      </el-form-item>
       <el-form-item label="Java文件" prop="javaFiles">
         <el-input
           type="textarea"

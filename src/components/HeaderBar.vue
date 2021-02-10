@@ -10,6 +10,7 @@
     >
       <el-menu-item index="/">项目</el-menu-item>
       <el-menu-item index="/submit-request">提交申请</el-menu-item>
+      <el-menu-item index="/test-case">测试用例</el-menu-item>
       <el-menu-item index="/config-mgmt">配置管理</el-menu-item>
       <el-menu-item index="/backup">备忘录</el-menu-item>
     </el-menu>

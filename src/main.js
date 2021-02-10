@@ -7,7 +7,7 @@ import axios from 'axios'
 import router from '@/router/index'
 import store from '@/store/index'
 import '@/registerServiceWorker'
-
+import websocket from '@/websocket/websocket.js'
 Vue.config.productionTip = false
 
 let axioscat = axios.create({
@@ -15,7 +15,7 @@ let axioscat = axios.create({
   timeout: 50000,
   headers: { 'Content-Type': 'application/json;charset=UTF-8' }
 })
-
+websocket.createWebSocket('ws://localhost:10001/')
 Vue.prototype.$cat = axioscat
 Vue.prototype.$qs = qs
 Vue.use(ElementUI)
